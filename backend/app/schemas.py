@@ -4,7 +4,7 @@ from typing import Optional
 class UserCreate(BaseModel):
     email: EmailStr
     username: str
-    password: str  # Not stored here, but sent to AWS Cognito
+    password: str
 
 class UserResponse(BaseModel):
     cognito_user_id: str
