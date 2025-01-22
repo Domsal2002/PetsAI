@@ -8,7 +8,7 @@ from botocore.exceptions import ClientError
 
 router = APIRouter()
 
-@router.post("/users", response_model=UserResponse)
+@router.post("/create", response_model=UserResponse)
 def create_user(user: UserCreate, db: Session = Depends(get_db)):
     """
     Create a new user by registering them with AWS Cognito and saving
