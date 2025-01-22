@@ -5,7 +5,7 @@ import LoginPage from "./components/LoginPage";
 import VerifyPage from "./components/VerifyPage";
 import LandingPage from "./components/LandingPage";
 import Signup from "./components/Signup";
-
+import CreatePetPage from "./components/createpet";
 const App = () => {
   return (
     <Router>
@@ -16,6 +16,7 @@ const App = () => {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/verify" element={<VerifyPage />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/createpet" element={<CreatePetPage />} />
         </Routes>
       </div>
     </Router>
