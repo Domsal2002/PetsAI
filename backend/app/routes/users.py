@@ -16,7 +16,7 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
     """
     try:
         # Register user with AWS Cognito
-        cognito_response = register_user(user.email, user.username, user.password)
+        cognito_response = register_user(user.email, user.password)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -24,7 +24,6 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
     db_user = User(
         cognito_user_id=cognito_response["UserSub"],
         email=user.email,
-        username=user.username,
         is_verified=False,
     )
     db.add(db_user)

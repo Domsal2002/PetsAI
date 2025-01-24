@@ -4,13 +4,11 @@ from typing import Optional
 # User Schemas
 class UserCreate(BaseModel):
     email: EmailStr
-    username: str
     password: str
 
 class UserResponse(BaseModel):
     cognito_user_id: str
     email: EmailStr
-    username: str
     is_verified: bool
 
     class Config:
