@@ -1,15 +1,24 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import User
 from app.schemas import UserCreate, UserResponse
 from app.aws_cognito import register_user, delete_cognito_user
 from botocore.exceptions import ClientError
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
 router = APIRouter()
 
+limiter = Limiter(key_func=get_remote_address)
+
 @router.post("/createuser", response_model=UserResponse)
-def create_user(user: UserCreate, db: Session = Depends(get_db)):
+@limiter.limit("5/minute")
+def create_user(
+    request: Request,
+    user: UserCreate, 
+    db: Session = Depends(get_db)
+    ):
     """
     Create a new user by registering them with AWS Cognito and saving
     the user metadata in the PostgreSQL database.
@@ -32,7 +41,12 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
     return db_user
 
 @router.delete("/users/{cognito_user_id}", status_code=204)
-def delete_user(cognito_user_id: str, db: Session = Depends(get_db)):
+@limiter.limit("5/minute")
+def delete_user(
+    request: Request,
+    cognito_user_id: str, 
+    db: Session = Depends(get_db)
+    ):
     """
     Delete a user from AWS Cognito and PostgreSQL.
     """

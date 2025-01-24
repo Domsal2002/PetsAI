@@ -4,6 +4,8 @@ import Navbar from "./components/Navbar";
 import LoginPage from "./components/LoginPage";
 import LandingPage from "./components/LandingPage";
 import CreatePetPage from "./components/createpet";
+import GenerateImagePage from "./components/Sample";
+
 const App = () => {
   return (
     <Router>
@@ -13,6 +15,7 @@ const App = () => {
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/pets" element={<CreatePetPage />} />
+          <Route path="/generate-image" element={<GenerateImagePage />} />
         </Routes>
       </div>
     </Router>
