@@ -27,7 +27,7 @@ def compute_secret_hash(username: str):
     hmac_hash = hmac.new(key, message.encode(), hashlib.sha256).digest()
     return base64.b64encode(hmac_hash).decode()
 
-def register_user(email: str, username: str, password: str):
+def register_user(email: str, password: str):
     """
     Register a new user with AWS Cognito.
     """
@@ -39,7 +39,6 @@ def register_user(email: str, username: str, password: str):
             SecretHash=compute_secret_hash(email),
             UserAttributes=[
                 {"Name": "email", "Value": email},
-                {"Name": "preferred_username", "Value": username},
             ],
         )
         return response

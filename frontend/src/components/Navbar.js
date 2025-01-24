@@ -16,13 +16,14 @@ const Navbar = () => {
             </Link>
           </li>
           <li>
-            <Link to="/verify" className="hover:underline">
-              Verify
+            <Link to="/signup" className="hover:underline">
+              signup
             </Link>
           </li>
           <li>
-            <Link to="/signup" className="hover:underline">
-              signup
+            <Link
+              to="/pets">
+              Pets
             </Link>
           </li>
           <li>
