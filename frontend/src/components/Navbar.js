@@ -27,6 +27,12 @@ const Navbar = () => {
           </li>
           <li>
             <Link
+              to="/pets">
+              Pets
+            </Link>
+          </li>
+          <li>
+            <Link
               to="/login"
               className="bg-gray-800 text-white px-4 py-2 rounded-md hover:bg-gray-700">
               Login
