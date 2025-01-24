@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Boolean, Integer, TIMESTAMP, ForeignKey
+from sqlalchemy import Column, String, Boolean, Integer, TIMESTAMP, ForeignKey, Text
 from sqlalchemy.sql import func
 from .database import Base
 
@@ -20,3 +20,15 @@ class Pet(Base):
     type = Column(String, nullable=True)
     created_at = Column(TIMESTAMP, server_default=func.now(), nullable=False)
     updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now(), nullable=False)
+
+class Image(Base):
+    __tablename__ = "images"
+
+    image_id = Column(Integer, primary_key=True, index=True)
+    pet_id = Column(Integer, ForeignKey("pets.pet_id"), nullable=False)
+    cognito_user_id = Column(String(255), ForeignKey("users.cognito_user_id"), nullable=False)
+    image_type = Column(String(50), nullable=False)  # 'uploaded' or 'generated'
+    s3_key = Column(String(255), nullable=False)  # Path to the image in S3
+    prompt = Column(Text, nullable=True)  # Nullable for uploaded images
+    created_at = Column(TIMESTAMP, server_default=func.now(), nullable=False)
+

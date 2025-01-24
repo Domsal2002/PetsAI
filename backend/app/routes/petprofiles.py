@@ -4,7 +4,6 @@ from app.database import get_db
 from app.models import Pet, User
 from app.schemas import PetCreate, PetResponse
 from app.routes.auth import get_current_user
-from cachetools import TTLCache
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 
