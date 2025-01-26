@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
-from app.routes import auth, petprofiles, users, confirmuser, generate_images, fetch_images  # Import your auth router
+from app.routes import auth, petprofiles, users, confirmuser, generate_images, fetch_images
 from dotenv import load_dotenv
 
 # Load environment variables from .env
