@@ -7,6 +7,7 @@ from app.aws_cognito import authenticate_user, COGNITO_REGION, USER_POOL_ID, CLI
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 from jose import jwt
+from jose.exceptions import ExpiredSignatureError
 import requests
 import threading
 from cachetools import TTLCache
@@ -48,24 +49,24 @@ def get_jwks():
 
 
 def verify_access_token(token: str):
-    """
-    Verify and decode the JWT token using Cognito public keys (JWKS).
-    """
     try:
-        # Fetch the JWKS (cached or refreshed)
         jwks = get_jwks()
-
-        # Decode the token using the JWKS
         payload = jwt.decode(
             token,
-            jwks,  # JWKS fetched dynamically
+            jwks,
             algorithms=["RS256"],
-            audience=CLIENT_ID,  # Match the audience claim
+            audience=CLIENT_ID,
             issuer=f"https://cognito-idp.{COGNITO_REGION}.amazonaws.com/{USER_POOL_ID}",
         )
         return payload
+
+    except ExpiredSignatureError:
+        # Specifically handle expired token
+        raise HTTPException(status_code=401, detail="Token has expired.")
+
     except jwt.JWTError as e:
-        raise Exception(f"Invalid Cognito token: {str(e)}")
+        # Handle other JWT errors
+        raise HTTPException(status_code=401, detail=f"Invalid token: {str(e)}")
 
 
 def get_current_user(
@@ -91,6 +92,24 @@ def get_current_user(
 
     # Return the user object
     return user
+
+@router.get("/me")
+def get_me(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Return the currently logged-in user's profile information.
+    
+    This endpoint is protected; it requires a valid JWT token in the
+    'Authorization: Bearer <token>' header. If the token is invalid 
+    or the user isn't found, FastAPI will raise an HTTPException.
+    """
+    # current_user is now guaranteed to be a valid User object
+    return {
+        "username": current_user.email
+        # Add any other user fields you want to expose
+    }
 
 
 @router.post("/login")

@@ -1,21 +1,37 @@
-"use client";
+"use client"; 
 import { useEffect, useState } from "react";
+import { fetchCurrentUser, UserProfile } from "@/lib/api"; // Adjust path to your api.ts
 
 export default function DashboardPage() {
   const [authenticated, setAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<UserProfile | null>(null);
 
   useEffect(() => {
-    // Check if we have a valid token
-    const token = localStorage.getItem("accessToken");
-    if (!token) {
-      window.location.href = "/login";
-    } else {
-      // Optionally, you could validate the token by making
-      // a quick request to an auth-check endpoint in your FastAPI
+    async function checkAuth() {
+      const token = localStorage.getItem("jwt");
+      if (!token) {
+        // No token => redirect immediately
+        window.location.href = "/login";
+        return;
+      }
+
+      // Call our centralized API function
+      const fetchedUser = await fetchCurrentUser(token);
+
+      if (!fetchedUser) {
+        // Invalid token or user not found => redirect
+        window.location.href = "/login";
+        return;
+      }
+
+      // If we got valid user data, set state
+      setUser(fetchedUser);
       setAuthenticated(true);
+      setLoading(false);
     }
-    setLoading(false);
+
+    checkAuth();
   }, []);
 
   if (loading) {
@@ -23,13 +39,16 @@ export default function DashboardPage() {
   }
 
   if (!authenticated) {
-    return null; // or a message
+    // We already redirected, so you can return null or a small placeholder
+    return null;
   }
 
   return (
     <div className="p-8">
       <h1 className="text-3xl font-bold mb-4">Dashboard</h1>
-      <p>Welcome to the dashboard. You are logged in!</p>
+      <p>Welcome, {user?.username}!</p>
+      <p>Email: {user?.email}</p>
+      {/* Render other user info or dashboard content */}
     </div>
   );
 }

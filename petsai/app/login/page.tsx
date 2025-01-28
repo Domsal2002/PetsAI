@@ -1,6 +1,7 @@
 "use client";
 import React, { FormEvent, useState } from "react";
 import { loginUser } from "@/lib/api";  // Adjust this import if your path differs
+import { setCookie } from "nookies";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");

@@ -1,3 +1,11 @@
+// lib/api.ts
+export interface UserProfile {
+  id: number;
+  username: string;
+  email: string;
+  // add other fields if you have them
+}
+
 // login endpoint
 export async function loginUser(email: string, password: string) {
     const response = await fetch("http://localhost:8000/login", {
@@ -17,6 +25,27 @@ export async function loginUser(email: string, password: string) {
     return response.json();
   }
 
+  //auth endpoint
+  export async function fetchCurrentUser(token: string): Promise<UserProfile | null> {
+    try {
+      const response = await fetch("http://localhost:8000/me", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+  
+      if (!response.ok) {
+        // For 401 or 404, we return null so the caller can handle redirect or fallback
+        return null;
+      }
+  
+      const data = await response.json();
+      return data; // { id, username, email, ... }
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      return null;
+    }
+  }
 
 //image generation endpoints 
   export async function fetchExistingImages(jwt: string) {

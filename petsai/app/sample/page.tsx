@@ -1,9 +1,7 @@
 "use client";
-// app/(dashboard)/generate-image/page.tsx
-
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import { generateImage } from "@/lib/api"; 
+import { generateImage, fetchCurrentUser, UserProfile } from "@/lib/api"; 
 // ^ Adjust import path as needed
 
 export default function GenerateImagePage() {
@@ -11,6 +9,35 @@ export default function GenerateImagePage() {
   const [images, setImages] = useState<any[]>([]);
   const [currentImage, setCurrentImage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [authenticated, setAuthenticated] = useState(false);
+  const [user, setUser] = useState<UserProfile | null>(null);
+
+  useEffect(() => {
+    async function checkAuth() {
+      const token = localStorage.getItem("jwt");
+      if (!token) {
+        // No token => redirect immediately
+        window.location.href = "/login";
+        return;
+      }
+
+      // Call our centralized API function
+      const fetchedUser = await fetchCurrentUser(token);
+
+      if (!fetchedUser) {
+        // Invalid token or user not found => redirect
+        window.location.href = "/login";
+        return;
+      }
+
+      // If we got valid user data, set state
+      setUser(fetchedUser);
+      setAuthenticated(true);
+      setLoading(false);
+    }
+
+    checkAuth();
+  }, []);
 
   const trainingImages = [
     { src: "/Whiskers1.jpg", alt: "Whiskers 1" },
