@@ -14,7 +14,7 @@ export async function loginUser(email: string, password: string) {
       username: email,
       password: password,
     }),
-    // credentials: "include", 
+    credentials: "include", 
   });
 
   if (!response.ok) {
