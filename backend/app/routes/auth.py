@@ -12,6 +12,8 @@ import requests
 import threading
 from cachetools import TTLCache
 import os
+from fastapi import Response, Cookie
+
 
 # Initialize the APIRouter
 router = APIRouter()
@@ -70,27 +72,27 @@ def verify_access_token(token: str):
 
 
 def get_current_user(
-    token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)
+    access_token: str = Cookie(None), 
+    db: Session = Depends(get_db)
 ):
     """
-    Decode and verify the JWT, and retrieve the current user from the database.
+    Decode and verify the JWT from the cookie, then fetch the user.
     """
-    # Decode and verify the JWT
-    payload = verify_access_token(token)
+    if not access_token:
+        raise HTTPException(status_code=401, detail="Authentication required")
+
+    payload = verify_access_token(access_token)
     if not payload:
         raise HTTPException(status_code=401, detail="Invalid or expired token")
 
-    # Extract the Cognito user ID (sub) from the token
     cognito_user_id = payload.get("sub")
     if not cognito_user_id:
         raise HTTPException(status_code=401, detail="Invalid token payload")
 
-    # Verify the user exists in the database
     user = db.query(User).filter(User.cognito_user_id == cognito_user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    # Return the user object
     return user
 
 @router.get("/me")
@@ -111,13 +113,14 @@ def get_me(
         # Add any other user fields you want to expose
     }
 
-
 @router.post("/login")
 @limiter.limit("50/minute")  # Apply rate limiting to this endpoint
 def login(
-    request: Request,  # Add the request parameter for rate limiting
+    request: Request, 
+    response: Response,
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db),
+    
 ):
     """
     Authenticate a user through AWS Cognito and return their tokens.
@@ -126,13 +129,14 @@ def login(
         # Authenticate the user via AWS Cognito
         auth_result = authenticate_user(form_data.username, form_data.password)
 
-        # Extract Cognito user ID (sub) from the returned ID token
+        # Extract tokens
         id_token = auth_result["IdToken"]
         access_token = auth_result["AccessToken"]
         payload = verify_access_token(id_token)
 
         if not payload:
             raise HTTPException(status_code=401, detail="Invalid Cognito token")
+
         cognito_user_id = payload.get("sub")
         if not cognito_user_id:
             raise HTTPException(status_code=401, detail="Cognito user ID not found in token")
@@ -140,7 +144,7 @@ def login(
         # Check if the user exists in the database
         user = db.query(User).filter(User.cognito_user_id == cognito_user_id).first()
 
-        # Add the user to the database if not already present
+        # Add user if not exists
         if not user:
             user = User(
                 cognito_user_id=cognito_user_id,
@@ -150,13 +154,20 @@ def login(
             db.add(user)
             db.commit()
 
-        return {
-            "id_token": id_token,
-            "access_token": access_token,
-            "token_type": "Bearer",
-        }
+        # Set access token in an HTTP-only cookie
+        response.set_cookie(
+            key="access_token",
+            value=access_token,
+            httponly=True,  # Prevent access from JavaScript
+            secure=False,  # Use secure cookies in production
+            samesite="Lax",  # Adjust as needed for cross-origin requests
+            max_age=3600  # 1 hour expiration
+        )
+
+        return {"message": "Login successful"}
 
     except HTTPException as e:
         raise e
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Authentication error: {str(e)}")
+

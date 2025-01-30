@@ -1,7 +1,6 @@
 "use client";
 import React, { FormEvent, useState } from "react";
-import { loginUser } from "@/lib/api";  // Adjust this import if your path differs
-import { setCookie } from "nookies";
+import { loginUser } from "@/lib/api";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -15,17 +14,8 @@ export default function LoginPage() {
     setErrorMsg(null);
 
     try {
-      // Call our helper function from lib/api.ts
-      const data = await loginUser(email, password);
-
-      // data should contain { id_token, access_token, token_type }
-      console.log("Login successful:", data);
-
-      // Store tokens in localStorage (simple approach)
-      localStorage.setItem("jwt", data.access_token);
-
-      // Optionally redirect to a protected route (like a Dashboard)
-      window.location.href = "/dashboard";
+      await loginUser(email, password);
+      window.location.href = "/dashboard"; // Redirect after successful login
     } catch (error: any) {
       setErrorMsg(error.message);
     } finally {
@@ -45,9 +35,7 @@ export default function LoginPage() {
         )}
 
         <div className="mb-4">
-          <label htmlFor="email" className="block mb-1 font-semibold">
-            Email
-          </label>
+          <label htmlFor="email" className="block mb-1 font-semibold">Email</label>
           <input
             id="email"
             type="email"
@@ -59,9 +47,7 @@ export default function LoginPage() {
         </div>
 
         <div className="mb-4">
-          <label htmlFor="password" className="block mb-1 font-semibold">
-            Password
-          </label>
+          <label htmlFor="password" className="block mb-1 font-semibold">Password</label>
           <input
             id="password"
             type="password"
@@ -72,11 +58,7 @@ export default function LoginPage() {
           />
         </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-        >
+        <button type="submit" disabled={loading} className="w-full py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50">
           {loading ? "Logging in..." : "Login"}
         </button>
       </form>

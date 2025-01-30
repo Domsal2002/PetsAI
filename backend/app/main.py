@@ -22,10 +22,10 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 # Add CORS Middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Allow your React app's URL
+    allow_origins=["http://localhost:3000"], 
     allow_credentials=True,
-    allow_methods=["*"],  # Allow all HTTP methods
-    allow_headers=["*"],  # Allow all headers
+    allow_methods=["*", "Post"],  # Allow all HTTP methods
+    allow_headers=["Authorization", "Content-Type", "Set-Cookie"],  # Allow all headers
 )
 
 # Include routers

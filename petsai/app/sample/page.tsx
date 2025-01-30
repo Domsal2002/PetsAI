@@ -1,62 +1,45 @@
 "use client";
+
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import { generateImage, fetchCurrentUser, UserProfile } from "@/lib/api"; 
-// ^ Adjust import path as needed
+import { generateImage, fetchCurrentUser, UserProfile } from "@/lib/api";
+import { useRouter } from "next/navigation"; // redirect unauthorized users
 
-export default function GenerateImagePage() {
+export default function SamplePage() {
   const [prompt, setPrompt] = useState("");
   const [images, setImages] = useState<any[]>([]);
   const [currentImage, setCurrentImage] = useState("");
   const [loading, setLoading] = useState(false);
-  const [authenticated, setAuthenticated] = useState(false);
   const [user, setUser] = useState<UserProfile | null>(null);
+  const [authChecked, setAuthChecked] = useState(false); // ✅ Ensures no flickering
+  const router = useRouter();
 
   useEffect(() => {
     async function checkAuth() {
-      const token = localStorage.getItem("jwt");
-      if (!token) {
-        // No token => redirect immediately
-        window.location.href = "/login";
-        return;
-      }
-
-      // Call our centralized API function
-      const fetchedUser = await fetchCurrentUser(token);
-
+      const fetchedUser = await fetchCurrentUser();
       if (!fetchedUser) {
-        // Invalid token or user not found => redirect
-        window.location.href = "/login";
+        router.push("/login"); // ✅ Redirect if not authenticated
         return;
       }
-
-      // If we got valid user data, set state
       setUser(fetchedUser);
-      setAuthenticated(true);
-      setLoading(false);
+      setAuthChecked(true);
     }
-
     checkAuth();
   }, []);
+
+  if (!authChecked) {
+    return <div className="p-4 text-center">Loading...</div>; // ✅ Prevents UI flickering
+  }
 
   const trainingImages = [
     { src: "/Whiskers1.jpg", alt: "Whiskers 1" },
     { src: "/Whiskers2.jpg", alt: "Whiskers 2" }
-    // Add more if you want
   ];
 
   const handleGenerateImage = async () => {
-    const jwt = localStorage.getItem("jwt");
-    if (!jwt) {
-      alert("You need to log in first!");
-      window.location.href = "/login";
-      return;
-    }
-
     setLoading(true);
     try {
-      // Use the helper from lib/api
-      const newImage = await generateImage(jwt, prompt);
+      const newImage = await generateImage(prompt);
       setImages((prev) => [newImage, ...prev]);
       setCurrentImage(newImage.url);
       setPrompt("");

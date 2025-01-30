@@ -27,6 +27,7 @@ def generate_image(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+
     if not current_user.is_verified:
         raise HTTPException(status_code=403, detail="User is not verified")
 
