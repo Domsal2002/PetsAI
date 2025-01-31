@@ -12,7 +12,7 @@ router = APIRouter()
 #Access the rate limiter from the app state
 limiter = Limiter(key_func=get_remote_address)
 
-@router.post("/pets", response_model=PetResponse)
+@router.post("/createpet", response_model=PetResponse)
 @limiter.limit("50/minute")
 def create_pet(
     request: Request,

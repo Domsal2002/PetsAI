@@ -76,6 +76,19 @@ export async function generateImage(prompt: string) {
   return response.json();
 }
 
+export async function getpets() {
+  const response = await fetch("http://localhost:8000/pets", {
+    method: "GET",
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    const errData = await response.json();
+    throw new Error(errData.detail || "Error fetching pets");
+  }
+
+  return response.json();
+}
 
 // export async function logoutUser() {
 //   await fetch("http://localhost:8000/logout", {
