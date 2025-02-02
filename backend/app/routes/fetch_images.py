@@ -11,7 +11,8 @@ router = APIRouter()
 
 limiter = Limiter(key_func=get_remote_address)
 
-@router.get("/sample-images")
+#Route that fetches the images generated with the sample model for a specific user
+@router.get("/sample-generated-images")
 @limiter.limit("5/minute")
 def get_sample_images(
     request: Request,

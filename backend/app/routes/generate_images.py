@@ -19,7 +19,8 @@ limiter = Limiter(key_func=get_remote_address)
 class GenerateImageRequest(BaseModel):
     prompt: str
 
-@router.post("/generate-image")
+# Route that generates an image using the sample model
+@router.post("/sample-generator")
 @limiter.limit("5/minute")
 def generate_image(
     request: Request,

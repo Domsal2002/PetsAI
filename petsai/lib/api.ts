@@ -4,6 +4,7 @@ export interface UserProfile {
   email: string;
 }
 
+//login user, store cookies
 export async function loginUser(email: string, password: string) {
   const response = await fetch("http://localhost:8000/login", {
     method: "POST",
@@ -24,6 +25,7 @@ export async function loginUser(email: string, password: string) {
   return response.json();
 }
 
+// Fetch the current user's profile, verify endpoint used
 export async function fetchCurrentUser(): Promise<UserProfile | null> {
   try {
     const response = await fetch("http://localhost:8000/me", {
@@ -42,8 +44,9 @@ export async function fetchCurrentUser(): Promise<UserProfile | null> {
   }
 }
 
+// Fetch existing images from the sample model
 export async function fetchExistingImages() {
-  const response = await fetch("http://localhost:8000/sample-images", {
+  const response = await fetch("http://localhost:8000/sample-generated-images", {
     method: "GET",
     credentials: "include", // ✅ Cookies are sent automatically
   });
@@ -56,8 +59,9 @@ export async function fetchExistingImages() {
   return response.json();
 }
 
+// Generate images with the sample model
 export async function generateImage(prompt: string) {
-  const response = await fetch("http://localhost:8000/generate-image", {
+  const response = await fetch("http://localhost:8000/sample-generator", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -76,6 +80,7 @@ export async function generateImage(prompt: string) {
   return response.json();
 }
 
+// this gets all the pets associated with a user
 export async function getpets() {
   const response = await fetch("http://localhost:8000/pets", {
     method: "GET",
