@@ -26,3 +26,6 @@ class PetResponse(BaseModel):
     
     class Config:
         from_attributes = True
+
+
+# this is an absolutely useless push so that I get dopamine from filling the github contributions graph
