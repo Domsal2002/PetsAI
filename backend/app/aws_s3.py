@@ -22,6 +22,7 @@ def upload_file_to_s3(file_path, s3_key):
         raise Exception(f"Failed to upload file to S3: {e.response['Error']['Message']}")
 
 def generate_presigned_url(s3_key, expiration=3600):
+    print("Generating presigned URL")
     try:
         return s3_client.generate_presigned_url(
             "get_object",
