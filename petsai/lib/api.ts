@@ -44,9 +44,23 @@ export async function fetchCurrentUser(): Promise<UserProfile | null> {
   }
 }
 
-// Fetch existing images from the sample model
-export async function fetchExistingImages() {
-  const response = await fetch("http://localhost:8000/sample-generated-images", {
+// // Fetch existing images from the sample model
+// export async function fetchExistingImages() {
+//   const response = await fetch("http://localhost:8000/sample-generated-images", {
+//     method: "GET",
+//     credentials: "include", // ✅ Cookies are sent automatically
+//   });
+
+//   if (!response.ok) {
+//     const errData = await response.json();
+//     throw new Error(errData.detail || "Error fetching images");
+//   }
+
+//   return response.json();
+// }
+
+export async function fetchExistingImages(petId: number) {
+  const response = await fetch(`http://localhost:8000/pets/${petId}/images`, {
     method: "GET",
     credentials: "include", // ✅ Cookies are sent automatically
   });
@@ -56,8 +70,13 @@ export async function fetchExistingImages() {
     throw new Error(errData.detail || "Error fetching images");
   }
 
-  return response.json();
-}
+  const data = await response.json();
+  return data.images as Array<{
+    image_id: number;
+    prompt: string | null;
+    url: string;
+  }>;
+} 
 
 // Generate images with the sample model
 export async function generateImage(prompt: string) {
