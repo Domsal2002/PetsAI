@@ -4,13 +4,13 @@ import React, { useEffect, useState } from "react";
 import { getpets } from "@/lib/api";
 
 interface Pet {
-  id: number;
+  pet_id: number;
   pet_name: string;
   type: string;
 }
 
 interface StaticPet {
-  id: "whiskers-static";
+  pet_id: "whiskers-static";
   pet_name: string;
   type: "cat";
 }
@@ -24,7 +24,7 @@ export default function PetsSidebar({ onSelect }: { onSelect: (pet: PetType) => 
     async function fetchPets() {
       try {
         const fetchedPets: Pet[] = await getpets();
-        const whiskers: StaticPet = { id: "whiskers-static", pet_name: "Whiskers", type: "cat" };
+        const whiskers: StaticPet = { pet_id: "whiskers-static", pet_name: "Whiskers", type: "cat" };
         setPets([whiskers, ...fetchedPets]);
       } catch (error) {
         console.error("Failed to fetch pets:", error);
@@ -40,10 +40,10 @@ export default function PetsSidebar({ onSelect }: { onSelect: (pet: PetType) => 
       <ul className="space-y-2 flex-1 overflow-y-auto">
         {pets.map((pet) => (
           <li
-            key={`pet-${pet.id}`}
+            key={`pet-${pet.pet_id}`}
             onClick={() => onSelect(pet)}
             className={`cursor-pointer p-3 rounded-lg transition ${
-              pet.id === "whiskers-static" ? "border-l-4 border-blue-500 bg-gray-100" : "hover:bg-gray-200"
+              pet.pet_id === "whiskers-static" ? "border-l-4 border-blue-500 bg-gray-100" : "hover:bg-gray-200"
             }`}
           >
             {pet.pet_name} {pet.type === "cat" ? "🐱" : "🐶"}

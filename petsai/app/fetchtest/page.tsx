@@ -24,7 +24,7 @@ export default function TestPet0Page() {
         // Adjust if your backend returns e.g. { images: [...] }
         setImages(
           data.map((img: any) => ({
-            image_id: img.imageId,
+            image_id: img.image_id,
             prompt: img.prompt,
             url: img.url,
           }))

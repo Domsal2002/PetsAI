@@ -32,3 +32,13 @@ class Image(Base):
     prompt = Column(Text, nullable=True)  # Nullable for uploaded images
     created_at = Column(TIMESTAMP, server_default=func.now(), nullable=False)
 
+class AIModel(Base):
+    __tablename__ = "ai_models"
+    model_id = Column(Integer, primary_key=True, index=True)
+    cognito_user_id = Column(String, ForeignKey("users.cognito_user_id"), nullable=False)
+    pet_id = Column(Integer, ForeignKey("pets.pet_id"), nullable=False)
+    replicate_model_id = Column(String(255), nullable=False)
+    status = Column(String(50), default="pending", nullable=False)
+    created_at = Column(TIMESTAMP, server_default=func.now(), nullable=False)
+    updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now(), nullable=False)
+
