@@ -36,7 +36,8 @@ def generate_image(
         # Step 1: Generate the image using Replicate
         input = {"width": 1024, "height": 1024, "prompt": body.prompt}
         output = replicate.run(
-            "domsal2002/wskrs-trigger-word-change-2:a1147491becf5114792c56f24dd6b27ef17213607d2bec5520887f338f79cd0b",
+            # "domsal2002/wskrs-trigger-word-change-2:a1147491becf5114792c56f24dd6b27ef17213607d2bec5520887f338f79cd0b",
+            "domsal2002/pet-50-a581f7:e189c8dcf682a4c07bd8054f93ba2899253ca734f9b2df902e7265c98bcfd116",
             input=input,
         )
 

@@ -41,4 +41,4 @@ class AIModel(Base):
     status = Column(String(50), default="pending", nullable=False)
     created_at = Column(TIMESTAMP, server_default=func.now(), nullable=False)
     updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now(), nullable=False)
-
+    trigger_word = Column(String, nullable=False)
