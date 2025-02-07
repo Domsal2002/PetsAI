@@ -14,6 +14,44 @@ register_heif_opener()
 
 router = APIRouter()
 
+router.post("/initiate-training")
+async def initiate_training(
+    background_tasks: BackgroundTasks,
+    pet_id: int = Form(...),
+    images: list[UploadFile] = File(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    print(f"total images: {len(images)}")
+    # Step 1: Verify pet ownership
+    pet = verify_pet_owner(pet_id, current_user, db)
+    
+    # Step 2: Process and upload images
+    processed_image_paths = process_and_upload_images(images, pet, current_user, db)
+    
+    # Step 3: Zip processed images
+    zip_filepath = zip_processed_images(processed_image_paths)
+    
+    # Step 4: Generate a random trigger word (simplified for example)
+    trigger_word = secrets.token_hex(4)
+    
+    # Step 5: Build autocaption prefix
+    pet_type = pet.type if pet.type else "pet"
+    autocaption_prefix = f"{pet_type}"
+    
+    # Step 6: Launch background task for training
+    background_tasks.add_task(
+        run_replicate_training,
+        zip_filepath,
+        pet.pet_id,
+        current_user.cognito_user_id,
+        trigger_word,  # Pass trigger_word directly
+        autocaption_prefix
+    )
+    
+    # Return immediate response with the count of processed images
+    return {"message": f"Training initiated for {len(processed_image_paths)} images", "trigger_word": trigger_word}
+
 def verify_pet_owner(pet_id: int, current_user: User, db: Session) -> Pet:
     """
     Verify that the pet belongs to the current user.
@@ -83,44 +121,6 @@ def zip_processed_images(processed_image_paths: list[str]) -> str:
             zipf.write(image_path, arcname=os.path.basename(image_path))
     
     return zip_filepath
-
-@router.post("/initiate-training")
-async def initiate_training(
-    background_tasks: BackgroundTasks,
-    pet_id: int = Form(...),
-    images: list[UploadFile] = File(...),
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
-    print(f"total images: {len(images)}")
-    # Step 1: Verify pet ownership
-    pet = verify_pet_owner(pet_id, current_user, db)
-    
-    # Step 2: Process and upload images
-    processed_image_paths = process_and_upload_images(images, pet, current_user, db)
-    
-    # Step 3: Zip processed images
-    zip_filepath = zip_processed_images(processed_image_paths)
-    
-    # Step 4: Generate a random trigger word (simplified for example)
-    trigger_word = secrets.token_hex(4)
-    
-    # Step 5: Build autocaption prefix
-    pet_type = pet.type if pet.type else "pet"
-    autocaption_prefix = f"{pet_type}"
-    
-    # Step 6: Launch background task for training
-    background_tasks.add_task(
-        run_replicate_training,
-        zip_filepath,
-        pet.pet_id,
-        current_user.cognito_user_id,
-        trigger_word,  # Pass trigger_word directly
-        autocaption_prefix
-    )
-    
-    # Return immediate response with the count of processed images
-    return {"message": f"Training initiated for {len(processed_image_paths)} images", "trigger_word": trigger_word}
 
 def run_replicate_training(zip_filepath: str, pet_id: int, cognito_user_id: str, trigger_word: str, autocaption_prefix: str):
     """
