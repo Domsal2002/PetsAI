@@ -38,6 +38,7 @@ class AIModel(Base):
     cognito_user_id = Column(String, ForeignKey("users.cognito_user_id"), nullable=False)
     pet_id = Column(Integer, ForeignKey("pets.pet_id"), nullable=False)
     replicate_model_id = Column(String(255), nullable=False)
+    model_uri = Column(Text)
     status = Column(String(50), default="pending", nullable=False)
     created_at = Column(TIMESTAMP, server_default=func.now(), nullable=False)
     updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now(), nullable=False)

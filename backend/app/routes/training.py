@@ -4,11 +4,12 @@ from app.database import get_db, SessionLocal  # SessionLocal for background tas
 from app.models import User, Pet, Image, AIModel
 from app.routes.auth import get_current_user
 from app.aws_s3 import upload_file_to_s3  # your S3 helper function
-import zipfile, uuid, os, io, secrets
+import zipfile, uuid, os, io, secrets, time
 from PIL import Image as PILImage
 from pillow_heif import register_heif_opener
 import replicate
 
+# Register HEIC support
 register_heif_opener()
 
 router = APIRouter()
@@ -73,12 +74,11 @@ def process_and_upload_images(images: list[UploadFile], pet: Pet, current_user: 
     
     for file in images:
         try:
-            # Reset file pointer to the beginning
             file.file.seek(0)
             contents = file.file.read()
             image = PILImage.open(io.BytesIO(contents))
             
-            # Convert the image to a standard format (WEBP in this example)
+            # Convert the image to a standard format (JPEG in this example)
             standard_filename = f"{uuid.uuid4()}.jpg"
             image_path = os.path.join(temp_dir, standard_filename)
             if image.mode != "RGB":
@@ -102,9 +102,8 @@ def process_and_upload_images(images: list[UploadFile], pet: Pet, current_user: 
             
         except Exception as e:
             print(f"Error processing image: {e}")
-            continue  # Skip invalid image files
+            continue
         finally:
-            # Close the file after processing
             file.file.close()
     
     return processed_image_paths
@@ -123,25 +122,29 @@ def zip_processed_images(processed_image_paths: list[str]) -> str:
 
 def run_replicate_training(zip_filepath: str, pet_id: int, cognito_user_id: str, trigger_word: str, autocaption_prefix: str):
     """
-    Background task to create a new model on Replicate and initiate training.
+    Background task to create a new model on Replicate, initiate training,
+    poll until training completion, and then store the final model URI.
     """
     db = SessionLocal()
     try:
-        # Create a new model record on Replicate
         model_owner = "domsal2002"
-        model_name = f"pet-{pet_id}-{uuid.uuid4().hex[:6]}"
-        destination = f"{model_owner}/{model_name}"
+        # Generate a temporary model name; Replicate may adjust this
+        temp_model_name = f"pet-{pet_id}-{uuid.uuid4().hex[:6]}"
         
+        # Create a new model record on Replicate.
         created_model = replicate.models.create(
             owner=model_owner,
-            name=model_name,
+            name=temp_model_name,
             visibility="private",
             hardware="gpu-t4",
             description="Training model for pet images"
         )
-        print(f"Model created: {destination}")
+        # Use the actual name returned by Replicate (e.g. "pet-50-201ebe")
+        actual_model_name = created_model.name  
+        actual_destination = f"{model_owner}/{actual_model_name}"
+        print(f"Model created: {actual_destination}")
         
-        # Build the version string for the training model
+        # Build the version string for the training model (your trainer version)
         version_str = "ostris/flux-dev-lora-trainer:b6af14222e6bd9be257cbc1ea4afda3cd0503e1133083b9d1de0364d8568e6ef"
         
         # Initiate training using the created model as destination
@@ -150,7 +153,7 @@ def run_replicate_training(zip_filepath: str, pet_id: int, cognito_user_id: str,
                 version=version_str,
                 input={
                     "input_images": zip_file,
-                    "steps": 1,
+                    "steps": 100,
                     "trigger_word": trigger_word,
                     "lora_rank": 16,
                     "autocaption_prefix": autocaption_prefix,
@@ -158,24 +161,38 @@ def run_replicate_training(zip_filepath: str, pet_id: int, cognito_user_id: str,
                     "autocaption": True,
                     "learning_rate": 0.0004,
                 },
-                destination=destination
+                destination=actual_destination
             )
         
-        # Display the entire Replicate response for inspection
-        print("Full Replicate response:")
-        print(training)
+        print("Training initiated. Waiting for completion...")
+        # Poll the training endpoint until status is not "starting" or "processing"
+        final_training = replicate.trainings.get(training.id)
+        while final_training.status in ["starting", "processing"]:
+            time.sleep(5)
+            final_training = replicate.trainings.get(training.id)
         
-        # Existing prints (if needed)
-        print(f"Training started: {training.status}")
-        print(f"Training URL (current): https://replicate.com/p/{training.id}")
+        print("Final training response:")
+        print(final_training)
+        print(f"Training ended with status: {final_training.status}")
         
-        # Record the training job in the AIModel table
+        if final_training.status != "succeeded":
+            raise Exception(f"Training did not succeed: {final_training.status}")
+        
+        # IMPORTANT: Extract the correct model URI from the training output field.
+        # The output field's "version" key contains the final, correct URI.
+        if not final_training.output or "version" not in final_training.output:
+            raise Exception("Final training response does not contain output.version")
+        model_uri = final_training.output["version"]
+        print(f"Constructed Model URI: {model_uri}")
+        
+        # Save the training job in the AIModel table including the model_uri field.
         new_ai_model = AIModel(
             cognito_user_id=cognito_user_id,
             pet_id=pet_id,
-            replicate_model_id=training.id,
-            status=training.status,
-            trigger_word=trigger_word  # Assign trigger_word directly
+            replicate_model_id=training.id,  # training job ID
+            model_uri=model_uri,             # the final model URI from the output
+            status=final_training.status,
+            trigger_word=trigger_word
         )
         db.add(new_ai_model)
         db.commit()
