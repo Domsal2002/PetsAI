@@ -123,7 +123,7 @@ def zip_processed_images(processed_image_paths: list[str]) -> str:
 def run_replicate_training(zip_filepath: str, pet_id: int, cognito_user_id: str, trigger_word: str, autocaption_prefix: str):
     """
     Background task to create a new model on Replicate, initiate training,
-    poll until training completion, and then store the final model URI.
+    poll until training completion, and then store the final model URI and final model name.
     """
     db = SessionLocal()
     try:
@@ -185,12 +185,13 @@ def run_replicate_training(zip_filepath: str, pet_id: int, cognito_user_id: str,
         model_uri = final_training.output["version"]
         print(f"Constructed Model URI: {model_uri}")
         
-        # Save the training job in the AIModel table including the model_uri field.
+        # Save the training job in the AIModel table including the model_uri and final_model_name fields.
         new_ai_model = AIModel(
             cognito_user_id=cognito_user_id,
             pet_id=pet_id,
             replicate_model_id=training.id,  # training job ID
             model_uri=model_uri,             # the final model URI from the output
+            final_model_name=actual_model_name,  # the final model name returned by Replicate
             status=final_training.status,
             trigger_word=trigger_word
         )

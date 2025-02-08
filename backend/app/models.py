@@ -27,9 +27,9 @@ class Image(Base):
     image_id = Column(Integer, primary_key=True, index=True)
     pet_id = Column(Integer, ForeignKey("pets.pet_id"), nullable=False)
     cognito_user_id = Column(String(255), ForeignKey("users.cognito_user_id"), nullable=False)
-    image_type = Column(String(50), nullable=False)  # 'uploaded' or 'generated'
-    s3_key = Column(String(255), nullable=False)  # Path to the image in S3
-    prompt = Column(Text, nullable=True)  # Nullable for uploaded images
+    image_type = Column(String(50), nullable=False)
+    s3_key = Column(String(255), nullable=False) 
+    prompt = Column(Text, nullable=True)
     created_at = Column(TIMESTAMP, server_default=func.now(), nullable=False)
 
 class AIModel(Base):
@@ -39,6 +39,7 @@ class AIModel(Base):
     pet_id = Column(Integer, ForeignKey("pets.pet_id"), nullable=False)
     replicate_model_id = Column(String(255), nullable=False)
     model_uri = Column(Text)
+    final_model_name = Column(Text)
     status = Column(String(50), default="pending", nullable=False)
     created_at = Column(TIMESTAMP, server_default=func.now(), nullable=False)
     updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now(), nullable=False)
