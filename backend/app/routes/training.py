@@ -9,12 +9,11 @@ from PIL import Image as PILImage
 from pillow_heif import register_heif_opener
 import replicate
 
-# Register HEIC support
 register_heif_opener()
 
 router = APIRouter()
 
-router.post("/initiate-training")
+@router.post("/initiate-training")
 async def initiate_training(
     background_tasks: BackgroundTasks,
     pet_id: int = Form(...),
@@ -151,7 +150,7 @@ def run_replicate_training(zip_filepath: str, pet_id: int, cognito_user_id: str,
                 version=version_str,
                 input={
                     "input_images": zip_file,
-                    "steps": 1000,
+                    "steps": 1,
                     "trigger_word": trigger_word,
                     "lora_rank": 16,
                     "autocaption_prefix": autocaption_prefix,
@@ -161,8 +160,14 @@ def run_replicate_training(zip_filepath: str, pet_id: int, cognito_user_id: str,
                 },
                 destination=destination
             )
+        
+        # Display the entire Replicate response for inspection
+        print("Full Replicate response:")
+        print(training)
+        
+        # Existing prints (if needed)
         print(f"Training started: {training.status}")
-        print(f"Training URL: https://replicate.com/p/{training.id}")
+        print(f"Training URL (current): https://replicate.com/p/{training.id}")
         
         # Record the training job in the AIModel table
         new_ai_model = AIModel(
