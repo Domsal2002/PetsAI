@@ -27,6 +27,7 @@ class Image(Base):
     image_id = Column(Integer, primary_key=True, index=True)
     pet_id = Column(Integer, ForeignKey("pets.pet_id"), nullable=False)
     cognito_user_id = Column(String(255), ForeignKey("users.cognito_user_id"), nullable=False)
+    model_id = Column(Integer, ForeignKey("ai_models.model_id"), nullable=True)
     image_type = Column(String(50), nullable=False)
     s3_key = Column(String(255), nullable=False) 
     prompt = Column(Text, nullable=True)
