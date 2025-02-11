@@ -1,39 +1,36 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import Navbar from "./components/navbar";
 import "./globals.css";
+import { Inter } from "next/font/google";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+const inter = Inter({ subsets: ["latin"] });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-export const metadata: Metadata = {
-  title: "Your Pet App",
-  description: "A pet management application",
+export const metadata = {
+  title: "PetsAI",
+  description: "Generate amazing images of your pets with AI",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-background`}
-      >
-        <div className="flex flex-col min-h-screen">
-          <Navbar />
-          <main className="flex-1 container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            {children}
-          </main>
-        </div>
+    <html lang="en" className={inter.className}>
+      <body className="min-h-screen flex flex-col bg-gray-50">
+        {/* Global Header */}
+        <header className="bg-white shadow-md py-4 px-6">
+          <div className="max-w-7xl mx-auto flex items-center justify-between">
+            <h1 className="text-xl font-bold text-gray-800">PetsAI</h1>
+            {/* Future navigation items can be added here */}
+          </div>
+        </header>
+
+        {/* Main Content */}
+        <main className="flex-1">{children}</main>
+
+        {/* Global Footer */}
+        <footer className="bg-white shadow-inner py-3 px-6 text-center text-sm text-gray-500">
+          &copy; {new Date().getFullYear()} PetsAI. All rights reserved.
+        </footer>
       </body>
     </html>
   );

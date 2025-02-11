@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Pet } from "../pets/page";
-import { getPets } from "@/lib/api";
+import { getPets, Pet } from "@/lib/api";
 
 interface PetsSidebarProps {
   onSelect: (pet: Pet) => void;
@@ -14,10 +13,10 @@ export default function PetsSidebar({ onSelect }: PetsSidebarProps) {
   useEffect(() => {
     async function fetchPets() {
       try {
-        const fetchedPets: Pet[] = await getPets();
+        const fetchedPets = await getPets();
         setPets(fetchedPets);
       } catch (error) {
-        console.error("Failed to fetch pets:", error);
+        console.error("Error fetching pets:", error);
       }
     }
     fetchPets();
@@ -31,7 +30,7 @@ export default function PetsSidebar({ onSelect }: PetsSidebarProps) {
           <li
             key={pet.pet_id}
             onClick={() => onSelect(pet)}
-            className="cursor-pointer p-2 rounded hover:bg-gray-200"
+            className="cursor-pointer p-2 rounded hover:bg-gray-100"
           >
             {pet.pet_name}
           </li>

@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Pet } from "../pets/page";
-import { generateImage } from "@/lib/api";
+import { generateImage, GenerateImageResponse, Pet } from "@/lib/api";
 
 interface PetImageGeneratorProps {
   selectedPet: Pet;
@@ -13,16 +12,14 @@ export default function PetImageGenerator({ selectedPet }: PetImageGeneratorProp
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // For now, we use a default model id. Later, you could allow a user to choose.
+  // For now, we use a default model id (hidden from the user)
   const DEFAULT_MODEL_ID = 24;
 
   const handleGenerate = async () => {
     if (!prompt.trim()) return;
     setLoading(true);
     try {
-      // generateImage is expected to call your dynamic image generation endpoint
-      // using the selected pet's ID, the default model id, and the prompt.
-      const result = await generateImage(selectedPet.pet_id, DEFAULT_MODEL_ID, prompt);
+      const result: GenerateImageResponse = await generateImage(selectedPet.pet_id, DEFAULT_MODEL_ID, prompt);
       setGeneratedImage(result.url);
     } catch (error: any) {
       alert(`Error generating image: ${error.message}`);
@@ -32,12 +29,10 @@ export default function PetImageGenerator({ selectedPet }: PetImageGeneratorProp
   };
 
   return (
-    <div className="w-full max-w-xl bg-white shadow-lg rounded-lg p-6">
-      <h2 className="text-2xl font-bold mb-2">
-        Generate an Image for {selectedPet.pet_name}
-      </h2>
+    <div className="bg-white p-6 rounded-lg shadow-lg max-w-2xl mx-auto">
+      <h2 className="text-2xl font-bold mb-4">Generate an Image for {selectedPet.pet_name}</h2>
       <p className="text-gray-600 mb-4">
-        Describe what you'd like to see, and our AI will create an image.
+        Describe your vision, and our AI will create an image for you.
       </p>
       <div className="flex gap-3">
         <input
@@ -57,11 +52,7 @@ export default function PetImageGenerator({ selectedPet }: PetImageGeneratorProp
       </div>
       {generatedImage && (
         <div className="mt-6">
-          <img
-            src={generatedImage}
-            alt="Generated AI"
-            className="w-full rounded shadow-md"
-          />
+          <img src={generatedImage} alt="Generated AI" className="w-full rounded shadow-md" />
         </div>
       )}
     </div>
