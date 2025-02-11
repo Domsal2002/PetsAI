@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { getpets } from "@/lib/api";
+import { getPets } from "@/lib/api";
 import PetCard from "./PetCard";
 
 interface Pet {
@@ -10,13 +10,7 @@ interface Pet {
   type: string;
 }
 
-interface StaticPet {
-  id: "whiskers-static";
-  pet_name: string;
-  type: "cat";
-}
-
-type PetType = Pet | StaticPet;
+type PetType = Pet;
 
 export default function PetsList({ onSelect }: { onSelect: (pet: PetType) => void }) {
   const [pets, setPets] = useState<PetType[]>([]);
@@ -24,9 +18,8 @@ export default function PetsList({ onSelect }: { onSelect: (pet: PetType) => voi
   useEffect(() => {
     async function fetchPets() {
       try {
-        const fetchedPets: Pet[] = await getpets();
-        const whiskers: StaticPet = { id: "whiskers-static", pet_name: "Whiskers", type: "cat" };
-        setPets([whiskers, ...fetchedPets]); // Place Whiskers at the top
+        const fetchedPets: Pet[] = await getPets();
+        setPets([...fetchedPets]);
       } catch (error) {
         console.error("Failed to fetch pets:", error);
       }

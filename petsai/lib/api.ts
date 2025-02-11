@@ -4,7 +4,18 @@ export interface UserProfile {
   email: string;
 }
 
-//login user, store cookies
+export interface Pet {
+  pet_id: number; // Changed from "id" to "pet_id"
+  pet_name: string;
+  type: string;
+}
+
+export interface GenerateImageResponse {
+  message: string;
+  url: string;
+}
+
+// login user, store cookies
 export async function loginUser(email: string, password: string) {
   const response = await fetch("http://localhost:8000/login", {
     method: "POST",
@@ -25,7 +36,7 @@ export async function loginUser(email: string, password: string) {
   return response.json();
 }
 
-// Fetch the current user's profile, verify endpoint used
+// Fetch the current user's profile
 export async function fetchCurrentUser(): Promise<UserProfile | null> {
   try {
     const response = await fetch("http://localhost:8000/me", {
@@ -44,25 +55,11 @@ export async function fetchCurrentUser(): Promise<UserProfile | null> {
   }
 }
 
-// // Fetch existing images from the sample model
-// export async function fetchExistingImages() {
-//   const response = await fetch("http://localhost:8000/sample-generated-images", {
-//     method: "GET",
-//     credentials: "include", // ✅ Cookies are sent automatically
-//   });
-
-//   if (!response.ok) {
-//     const errData = await response.json();
-//     throw new Error(errData.detail || "Error fetching images");
-//   }
-
-//   return response.json();
-// }
-
-export async function fetchExistingImages(petId: number) {
-  const response = await fetch(`http://localhost:8000/pets/${petId}/images`, {
+// Fetch existing images for a pet
+export async function fetchExistingImages(pet_id: number) {
+  const response = await fetch(`http://localhost:8000/pets/${pet_id}/images`, {
     method: "GET",
-    credentials: "include", // ✅ Cookies are sent automatically
+    credentials: "include", 
   });
 
   if (!response.ok) {
@@ -78,46 +75,48 @@ export async function fetchExistingImages(petId: number) {
   }>;
 } 
 
-// Generate images with the sample model
-export async function generateImage(prompt: string) {
-  const response = await fetch("http://localhost:8000/sample-generator", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ prompt }),
-    credentials: "include",  
-  });
-
-  console.log([...response.headers]);
-
-  if (!response.ok) {
-    const errData = await response.json();
-    throw new Error(errData.detail || "Error generating image");
-  }
-
-  return response.json();
-}
-
-// this gets all the pets associated with a user
-export async function getpets() {
-  const response = await fetch("http://localhost:8000/pets", {
+// This gets all the pets associated with a user
+export async function getPets(): Promise<Pet[]> {
+  const res = await fetch("http://localhost:8000/pets", {
     method: "GET",
-    credentials: "include",
-  });
-
-  if (!response.ok) {
-    const errData = await response.json();
-    throw new Error(errData.detail || "Error fetching pets");
+    credentials: "include"
+  }); // Adjust the URL as needed
+  if (!res.ok) {
+    throw new Error("Failed to fetch pets");
   }
-
-  return response.json();
+  return res.json();
 }
 
+// Generate an image for a pet using the dynamic endpoint.
+// Note: We use pet_id consistently here.
+export async function generateImage(
+  pet_id: number,
+  modelId: number,
+  prompt: string
+): Promise<GenerateImageResponse> {
+  const formData = new FormData();
+  // Use the parameter pet_id (not petId)
+  formData.append("pet_id", pet_id.toString());
+  formData.append("model_id", modelId.toString());
+  formData.append("prompt", prompt);
+
+  const res = await fetch("http://localhost:8000/generate-image", {
+    method: "POST",
+    credentials: "include",
+    body: formData,
+  });
+  if (!res.ok) {
+    const errorData = await res.json();
+    throw new Error(errorData.detail || "Image generation failed");
+  }
+  return res.json();
+}
+
+// Optionally, you can also include logoutUser if needed.
 // export async function logoutUser() {
 //   await fetch("http://localhost:8000/logout", {
 //     method: "POST",
-//     credentials: "include", // ✅ Ensure cookies are cleared
+//     credentials: "include",
 //   });
-//   window.location.href = "/login"; // Redirect after logout
+//   window.location.href = "/login";
 // }

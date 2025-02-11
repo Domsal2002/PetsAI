@@ -7,7 +7,7 @@ import { fetchExistingImages } from "../../lib/api";
 interface ImageData {
   image_id: number;
   prompt: string | null;
-  url: string; // presigned URL
+  url: string;
 }
 
 export default function TestPet0Page() {
@@ -19,9 +19,8 @@ export default function TestPet0Page() {
     // Hard-code petId to 0
     setLoading(true);
 
-    fetchExistingImages(0)
+    fetchExistingImages(10)
       .then((data) => {
-        // Adjust if your backend returns e.g. { images: [...] }
         setImages(
           data.map((img: any) => ({
             image_id: img.image_id,
