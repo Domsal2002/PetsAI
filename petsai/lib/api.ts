@@ -1,6 +1,5 @@
 export interface UserProfile {
   id: number;
-  username: string;
   email: string;
 }
 
@@ -73,12 +72,12 @@ export async function getPets(): Promise<Pet[]> {
 
 export async function generateImage(
   pet_id: number,
-  modelId: number,
+  // modelId: number,
   prompt: string
 ): Promise<GenerateImageResponse> {
   const formData = new FormData();
   formData.append("pet_id", pet_id.toString());
-  formData.append("model_id", modelId.toString());
+  // formData.append("model_id", modelId.toString());
   formData.append("prompt", prompt);
   const res = await fetch("http://localhost:8000/generate-image", {
     method: "POST",

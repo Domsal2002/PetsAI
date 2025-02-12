@@ -13,13 +13,13 @@ export default function PetImageGenerator({ selectedPet }: PetImageGeneratorProp
   const [loading, setLoading] = useState(false);
 
   // For now, we use a default model id (hidden from the user)
-  const DEFAULT_MODEL_ID = 24;
+  // const DEFAULT_MODEL_ID = 1;
 
   const handleGenerate = async () => {
     if (!prompt.trim()) return;
     setLoading(true);
     try {
-      const result: GenerateImageResponse = await generateImage(selectedPet.pet_id, DEFAULT_MODEL_ID, prompt);
+      const result: GenerateImageResponse = await generateImage(selectedPet.pet_id, prompt);
       setGeneratedImage(result.url);
     } catch (error: any) {
       alert(`Error generating image: ${error.message}`);
