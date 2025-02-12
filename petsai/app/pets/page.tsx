@@ -9,7 +9,7 @@ export default function PetsPage() {
   const [selectedPet, setSelectedPet] = useState<Pet | null>(null);
 
   return (
-    <div className="flex h-full">
+    <div className="flex h-full min-h-screen">
       {/* Sidebar */}
       <aside className="w-64 bg-white border-r border-gray-200 p-4 overflow-y-auto">
         <PetsSidebar onSelect={setSelectedPet} />
